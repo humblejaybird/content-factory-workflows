@@ -1,0 +1,143 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "multipleMethods": true,
+        "httpMethod": [
+          "POST"
+        ],
+        "path": "content_factory",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -384,
+        16
+      ],
+      "id": "243b550d-c6ea-4d9d-950a-dd189ccf6422",
+      "name": "Webhook",
+      "webhookId": "58c0cc78-4f3b-4713-8a2c-e0db71a84f81"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=\"Topic:{{ $json.body.topic }} . Generate a JSON array of 3 items. Each item must have:\n\n'platform': (Twitter, LinkedIn, or Email)\n\n'content': A full, ready-to-post piece of content.\n\n'status': Always 'draft'. Return ONLY the JSON array.\""
+            }
+          ]
+        },
+        "simplify": false,
+        "jsonOutput": true,
+        "builtInTools": {},
+        "options": {
+          "systemMessage": "\"Return a JSON object with a single key 'posts' that contains the array of content pieces. Do not include any other text.\""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -256,
+        96
+      ],
+      "id": "fbd538ad-a814-4f61-968d-5d893932f098",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "7xLnCKrbYIagOw7i",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Get the raw text string from the Gemini response\nconst rawText = $json.candidates[0].content.parts[0].text;\n\n// 2. Parse that string into a real JavaScript object\nconst data = JSON.parse(rawText);\n\n// 3. Extract the 'posts' array and turn each post into an n8n item\nreturn data.posts.map(post => ({ json: post }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        80,
+        144
+      ],
+      "id": "e7bd5a3b-a067-4d9e-b389-0474b535385e",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO content_outputs (topic, platform, content, status)\nVALUES ($1, $2, $3, $4);",
+        "options": {
+          "queryReplacement": "={{ [ \n  $('Webhook').item.json.body.topic, \n  $json.platform, \n  $json.content, \n  $json.status \n] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        464,
+        32
+      ],
+      "id": "7e5cbfcc-2b2c-4d1e-b93e-936e824efd5a",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "2z6CjvTX2Au4SuLd",
+          "name": "Postgres account 2"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "03da73d4f8fbf20b9724af894057a2cf20e2a007c9655f8d5334fd3eb1b0b6bb"
+  }
+}
