@@ -1,0 +1,95 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "path": "get_content",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -368,
+        -16
+      ],
+      "id": "8a9c944c-fe69-4b63-9637-70b2c9c97e12",
+      "name": "Webhook",
+      "webhookId": "877d04ec-a2f1-4a2f-9708-ea2a699358ac"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM content_outputs ORDER BY created_at DESC LIMIT 20;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -80,
+        -96
+      ],
+      "id": "44b8b525-fabe-4346-a275-761db67a672b",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "2z6CjvTX2Au4SuLd",
+          "name": "Postgres account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        160,
+        0
+      ],
+      "id": "b532c4bf-bacc-47e8-b940-7323bc1c013c",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "03da73d4f8fbf20b9724af894057a2cf20e2a007c9655f8d5334fd3eb1b0b6bb"
+  }
+}
