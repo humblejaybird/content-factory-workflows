@@ -1,0 +1,60 @@
+{
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "e06b21e0-7ca9-430f-aca6-a374dc69a1a5",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "#client-alerts-internal",
+          "mode": "name"
+        },
+        "text": "=🚨 *Automated Error Report*\n---\n*Project:* Content Factory V1\n*Workflow:* {{ $workflow.name }}\n*Error Detail:* `{{ $json.execution.error.message }}`\n*Severity:* Critical\n\n[Manage Execution]({{ $json.execution.url }})",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "4d7aae3c-3664-40b3-87a8-6cd37c981b07",
+      "name": "Send a message",
+      "webhookId": "ee94b660-70d9-4ff8-b69b-614578304619",
+      "credentials": {
+        "slackApi": {
+          "id": "ZMXv3lpPFjdmFBTj",
+          "name": "Slack account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "03da73d4f8fbf20b9724af894057a2cf20e2a007c9655f8d5334fd3eb1b0b6bb"
+  }
+}
